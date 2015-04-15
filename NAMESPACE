@@ -1,0 +1,13 @@
+useDynLib(LAS)
+exportPattern("^[[:alpha:]]+")
+
+importFrom(Rcpp, evalCpp)
+
+import("doParallel")
+import("RcppParallel")
+import("BH")
+import("igraph")
+
+
+export(lascore)
+export(stl_sort)
