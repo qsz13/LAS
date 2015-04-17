@@ -1,0 +1,16 @@
+{
+    "contents" : "Package: LAS\nType: Package\nTitle: What the package does (short line)\nVersion: 1.0\nDate: 2015-04-14\nAuthor: Your Name\nMaintainer: Your Name <your@email.com>\nDescription: More about what it does (maybe more than one line)\nLicense: GPL (>= 2)\nImports: Rcpp (>= 0.11.5), BH, doParallel, igraph, fdrtool,foreach\nLinkingTo: Rcpp,BH\n",
+    "created" : 1429255759317.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1784450701",
+    "id" : "6C74A54E",
+    "lastKnownWriteTime" : 1429257424,
+    "path" : "~/Workspace/Bio/LAS/DESCRIPTION",
+    "project_path" : "DESCRIPTION",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "dcf"
+}
