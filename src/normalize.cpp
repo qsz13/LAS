@@ -41,3 +41,4 @@ void normalizeMatrix(NumericMatrix x)
     normalize(x.row(i));
   }
 }
+

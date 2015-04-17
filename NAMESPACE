@@ -3,11 +3,13 @@ exportPattern("^[[:alpha:]]+")
 
 importFrom(Rcpp, evalCpp)
 
-import("doParallel")
-import("RcppParallel")
-import("BH")
-import("igraph")
+#import(makeCluster)
+import(doParallel)
+
+import(foreach)
+import(BH)
+import(igraph)
+import(fdrtool)
 
 
-export(lascore)
 export(stl_sort)

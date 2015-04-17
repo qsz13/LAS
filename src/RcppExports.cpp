@@ -5,19 +5,6 @@
 
 using namespace Rcpp;
 
-// lascore
-double lascore(NumericVector x, NumericVector y, NumericVector z);
-RcppExport SEXP LAS_lascore(SEXP xSEXP, SEXP ySEXP, SEXP zSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type z(zSEXP);
-    __result = Rcpp::wrap(lascore(x, y, z));
-    return __result;
-END_RCPP
-}
 // stl_sort
 NumericVector stl_sort(NumericVector x);
 RcppExport SEXP LAS_stl_sort(SEXP xSEXP) {
