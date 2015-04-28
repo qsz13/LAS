@@ -7,5 +7,6 @@ Author: Your Name
 Maintainer: Your Name <your@email.com>
 Description: More about what it does (maybe more than one line)
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.11.5), BH, doParallel, igraph, fdrtool,foreach
+Imports: Rcpp (>= 0.11.5), BH,igraph, fdrtool
 LinkingTo: Rcpp,BH
+Depends: foreach, doParallel

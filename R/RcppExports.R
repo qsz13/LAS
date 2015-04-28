@@ -5,12 +5,12 @@ stl_sort <- function(x) {
     .Call('LAS_stl_sort', PACKAGE = 'LAS', x)
 }
 
-normalize <- function(x) {
-    .Call('LAS_normalize', PACKAGE = 'LAS', x)
+normalizeInput <- function(x) {
+    invisible(.Call('LAS_normalizeInput', PACKAGE = 'LAS', x))
 }
 
-normalizeMatrix <- function(x) {
-    invisible(.Call('LAS_normalizeMatrix', PACKAGE = 'LAS', x))
+normalizeInputMatrix <- function(x) {
+    invisible(.Call('LAS_normalizeInputMatrix', PACKAGE = 'LAS', x))
 }
 
 rcpp_hello_world <- function() {

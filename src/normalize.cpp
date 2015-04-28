@@ -20,7 +20,7 @@ NumericVector stl_sort(NumericVector x)
 }
 
 // [[Rcpp::export]]
-NumericVector normalize(NumericVector x) 
+void normalizeInput(NumericVector x) 
 {
   IntegerVector rank = match(x, stl_sort(x));
   int m = x.size()+1;
@@ -29,16 +29,21 @@ NumericVector normalize(NumericVector x)
     double p = (double)rank[i]/m;
     x[i] = quantile(dist, p);
   }
-  return x;
 }
 
 
 // [[Rcpp::export]]
-void normalizeMatrix(NumericMatrix x)
+void normalizeInputMatrix(NumericMatrix x)
 {
   int nrow = x.nrow();
   for (int i = 0; i < nrow; i++) {
-    normalize(x.row(i));
+    normalizeInput(x.row(i));
   }
 }
+
+
+
+
+
+
 

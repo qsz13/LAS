@@ -24,7 +24,8 @@ lascore = function(x,y,z)
   sum(x*y*z)/length(x)
 }
 
-las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, need.normalize=TRUE){
+las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, raw.normalize=TRUE){
+  
   network.node <- V(network.graph)$name
   matrix.node <- row.names(matrix)
   if(!identical(intersect(network.node,matrix.node),union(network.node,matrix.node))){
@@ -33,9 +34,9 @@ las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, need.nor
     express.matrix <- cleanMatrix(express.matrix, common.node)
   }
   size <- length(common.node)
-  if(need.normalize)
+  if(raw.normalize)
   {
-    normalizeMatrix(express.matrix)
+    normalizeInputMatrix(express.matrix)
     cat("normalized\n")
   }
   
@@ -86,46 +87,60 @@ las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, need.nor
     }
   }
   
-  #result = findz(node.z, network.graph)
-  return(node.z)
+  result = node.z#z.kernel.density(node.z, network.graph)
+  return(result)
   
 }
 
 
-findz <- function(relate.matrix, network.graph ) {
+z.kernel.density <- function(relate.matrix, network.graph, smoothing.normalize=c("one","squareM","false") ) {
+  smoothing.normalize <- match.arg(smoothing.normalize)
+  
   weight0 = dnorm(0)
   weight1 = dnorm(1)
   weight2 = dnorm(2)
   
   size = nrow(relate.matrix)
   
-  relate.matrix
-  
+
   relate.matrix = relate.matrix[order(rownames(relate.matrix)), ] 
   relate.matrix = relate.matrix[,order(colnames(relate.matrix)) ] 
   
   
-  result <- weight0*relate.matrix
+
 
 
   adjacency1 <- get.adjacency(network.graph, type="both")
-
   adjacency2 <- get.adjacency(connect.neighborhood(network.graph,2), type="both")-adjacency1
 
-  
-  
-  
   adjacency1 = adjacency1[order(rownames(adjacency1)), ] 
   adjacency1 = adjacency1[,order(colnames(adjacency1)) ] 
   adjacency2 = adjacency2[order(rownames(adjacency2)), ] 
   adjacency2 = adjacency2[,order(colnames(adjacency2)) ] 
   
-  result <- result+relate.matrix%*%(adjacency1*weight1)
+  weight.matrix = diag(size)*weight0 +adjacency1*weight1+adjacency2*weight2
 
-  result <- result+relate.matrix%*%(adjacency2*weight2)
+  if(smoothing.normalize=="one")
+  {
+    rsum = rowSums(as.matrix(weight.matrix))
+    nmatrix = diag(1/rsum)
+    colnames(nmatrix) <- rownames(weight.matrix)
+    weight.matrix = nmatrix %*% weight.matrix
 
-  
-  
+  }
+  else if(smoothing.normalize=="squareM")
+  {
+    temp.weight.matrix = as.matrix(weight.matrix)
+    rsum = rowSums(temp.weight.matrix)
+    m = rowSums(temp.weight.matrix != 0)
+    nmatrix = diag(sqrt(m)/rsum)
+    colnames(nmatrix) <- rownames(weight.matrix)
+    weight.matrix = nmatrix%*%weight.matrix
+    
+  }
+
+  result <- relate.matrix%*%weight.matrix
+
   
   return(result)
   
