@@ -37,7 +37,6 @@ las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, raw.norm
   if(raw.normalize)
   {
     normalizeInputMatrix(express.matrix)
-    cat("normalized\n")
   }
   
   if(k!=1)
@@ -50,7 +49,6 @@ las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, raw.norm
     connected.list <- as.matrix(get.edgelist(network.graph))
   }
   row.size <- nrow(connected.list)
-  #row.size<-5000
   cl <- makeCluster(n.cores)
   registerDoParallel(cl)
   
