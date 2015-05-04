@@ -1,30 +1,13 @@
-
-getCommonNode <- function(network.graph, matrix){
-  network.node <- V(network.graph)$name
-  matrix.node <- row.names(matrix) 
-  common.node <- intersect(network.node, matrix.node)
-  return(common.node)
-}
-
-cleanGraph <- function(network.graph, remain){
-  network.node <- V(network.graph)$name
-  delete <- setdiff(network.node, remain)
-  network.graph <- delete.vertices(network.graph, delete)
-  return(network.graph)
-}
-
-cleanMatrix <- function(express.matrix, remain)
-{
-  express.matrix <- express.matrix[rownames(b)%in%remain,]
-  return(express.matrix)
-}
-
-lascore = function(x,y,z)
-{
-  sum(x*y*z)/length(x)
-}
-
-las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, raw.normalize=TRUE){
+#' Find the liquid association scouting gene
+#' 
+#' @param network.graph An igraph object representing the gene network.
+#' @param express.matrix A matrix represeting the express matrix for the genes in gene network.Row names are the gene id in gene network.
+#' @param k Integer giving the order of the network.
+#' @param n.cores core number used for parallel computing
+#' @return A logical matrix representing the LA-scouting genes for each gene. Rows represent the center gene id and columns represents the LA-scouting genes.
+#' @export
+#' 
+lascouting <- function(network.graph, express.matrix, k=2, n.cores=4){
   
   network.node <- V(network.graph)$name
   matrix.node <- row.names(matrix)
@@ -34,10 +17,7 @@ las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, raw.norm
     express.matrix <- cleanMatrix(express.matrix, common.node)
   }
   size <- length(common.node)
-  if(raw.normalize)
-  {
-    normalizeInputMatrix(express.matrix)
-  }
+  normalizeInputMatrix(express.matrix)
   
   if(k!=1)
   {
@@ -91,7 +71,16 @@ las <- function(network.graph, express.matrix, k=2, width=2, n.cores=4, raw.norm
 }
 
 
-z.kernel.density <- function(relate.matrix, network.graph, smoothing.normalize=c("one","squareM","false") ) {
+
+#' Evaluate the result using kernel density estimation.
+#' 
+#' @param relate.matrix The matrix returned by lascouting.
+#' @param network.graph The igraph object representing the gene network.
+#' @param smoothing.normalize Different ways to normalize the result.
+#' @return A  matrix representing the kernel density of each gene. Each row is a gene, columns are the weights of scouting genes for the gene.
+#' @export
+#' 
+z.kernel.density <- function(relate.matrix, network.graph, smoothing.normalize=c("one","squareM","none") ) {
   smoothing.normalize <- match.arg(smoothing.normalize)
   
   weight0 = dnorm(0)
@@ -144,6 +133,34 @@ z.kernel.density <- function(relate.matrix, network.graph, smoothing.normalize=c
   
 }
 
+
+
+
+
+getCommonNode <- function(network.graph, matrix){
+  network.node <- V(network.graph)$name
+  matrix.node <- row.names(matrix) 
+  common.node <- intersect(network.node, matrix.node)
+  return(common.node)
+}
+
+cleanGraph <- function(network.graph, remain){
+  network.node <- V(network.graph)$name
+  delete <- setdiff(network.node, remain)
+  network.graph <- delete.vertices(network.graph, delete)
+  return(network.graph)
+}
+
+cleanMatrix <- function(express.matrix, remain)
+{
+  express.matrix <- express.matrix[rownames(b)%in%remain,]
+  return(express.matrix)
+}
+
+lascore = function(x,y,z)
+{
+  sum(x*y*z)/length(x)
+}
 
 
 

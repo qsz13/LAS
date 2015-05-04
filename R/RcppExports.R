@@ -13,7 +13,3 @@ normalizeInputMatrix <- function(x) {
     invisible(.Call('LAS_normalizeInputMatrix', PACKAGE = 'LAS', x))
 }
 
-rcpp_hello_world <- function() {
-    .Call('LAS_rcpp_hello_world', PACKAGE = 'LAS')
-}
-
