@@ -162,7 +162,132 @@ lascore = function(x,y,z)
   sum(x*y*z)/length(x)
 }
 
+getSubNet = function(graph, x, order)
+{
+  return(neighborhood(graph, order,x))
+  
+}
 
+
+go <- function(z, g,cutoff)
+{
+
+  if(sum(z)>0)
+  {
+    w = names(z[z>cutoff])
+    if(length(w)>0)
+    {
+      subg <- induced.subgraph(graph=g,vids=w)
+      return(walktrap.community(subg))
+    }
+    else
+    {
+      return(NULL)
+    }
+  }
+  else
+  {
+    return(NULL)
+  }
+  
+}
+
+#' get GO
+#' 
+#' @export
+#' 
+getGO <- function(sel.entrez,all.entrez)
+{
+  params <- new("GOHyperGParams", geneIds=sel.entrez, universeGeneIds=all.entrez, ontology="BP", pvalueCutoff=0.01,conditional=F, testDirection="over", annotation="hgu133a.db")
+  Over.pres = tryCatch({
+    Over.pres<-hyperGTest(params)
+  }, error = function(e) {
+    return(NULL)
+  })
+  if(is.null(Over.pres))
+  {
+    return(NULL)
+  }
+  
+  summary <- getGeneric("summary")
+  ov<-summary(Over.pres)
+  return(ov$Term)
+}
+
+
+#' get GO
+#' 
+#' @export
+#' 
+getgobp <- function(graph, z.matrix, k=2, n.cores=1, cutoff=0.8, community.min=5)
+{
+  com = apply(z.matrix, 1, go, graph,cutoff)
+
+  all.entrez<-rownames(z.matrix)
+
+  resulttable = NULL
+
+  for(x in names(com))
+  {
+    c = com[[x]]
+    if(!is.null(c))
+    {
+
+      member = membership(c)
+      z = names(member[member==1])
+      
+      sel.entrez<-x
+      xgo = getGO(sel.entrez, all.entrez)
+      
+      if(is.null(xgo))
+      {
+        next
+      }
+      else
+      {
+        xgo <- paste(xgo, collapse = '\n')
+      }
+      
+      xk = neighborhood(graph,k,nodes=x)
+      sel.entrez = as.character(unlist(xk))
+      xkgo = getGO(sel.entrez, all.entrez)
+      if(is.null(xkgo))
+      {
+        next
+      }
+      else
+      {
+        xkgo <- paste(xkgo, collapse = '\n')
+      }
+      
+      sel.entrez<-z
+      zgo = getGO(sel.entrez, all.entrez)
+      
+      if(is.null(zgo))
+      {
+        next
+      }
+      else
+      {
+        zgo <- paste(zgo, collapse = '\n')
+      }
+      
+      z<-paste(z, collapse = ' ')
+      
+      print(x)
+      print(xgo)
+      print(xkgo)
+      print(z)
+      print(zgo)
+      resulttable = rbind(resulttable, data.frame(x, xgo, xkgo, z, zgo))
+    }
+    
+     
+    
+  }
+  return(resulttable)
+
+}
 
 
 

@@ -62,8 +62,10 @@ ggnet(network, size=3,node.group=istarget,color="blue" ,)
 
 
 
-testdata =newresult['5700',]
+testdata =result['5700',]
 target = names(testdata[testdata>0.6])
+terget.graph = induced.subgraph(graph=g,vids=target)
+
 
 target = names(testdata)[index.top.N(testdata,N=40)]
 
@@ -81,3 +83,47 @@ index.top.N = function(xs, N=10){
   }
 }
 
+
+testz = result['5700',]
+cutoff=0.8
+w = names(testz[testz>cutoff])
+subg <- induced.subgraph(graph=g,vids=w)
+walktrap.community(subg)
+network = asNetwork(subg)
+ggnet(network,size=4,segment.size=1)
+
+
+plot(subg)
+
+library(GOstats)
+
+
+library(GOstats)
+
+sel.entrez<-rownames(b)[1:5]
+all.entrez<-rownames(b)
+params <- new("GOHyperGParams", geneIds=sel.entrez, universeGeneIds=all.entrez, ontology="BP", pvalueCutoff=0.01,conditional=F, testDirection="over", annotation="hgu133a.db")
+Over.pres<-hyperGTest(params)
+ov<-summary(Over.pres)
+ov$Term
+
+
+
+
+
+for(c in com)
+{
+  print(names(com))
+}
+
+sel.entrez = as.character(unlist(neighborhood(g,2,c('1000'))))
+all.entrez<-rownames(result)
+params <- new("GOHyperGParams", geneIds=sel.entrez, universeGeneIds=all.entrez, ontology="BP", pvalueCutoff=0.01,conditional=F, testDirection="over", annotation="hgu133a.db")
+Over.pres<-hyperGTest(params)
+ov<-summary(Over.pres)
+ov$Term
+
+typeof(sel.entrez)
+unlist(sel.entrez)
+sel.entrez
+all.entrez
