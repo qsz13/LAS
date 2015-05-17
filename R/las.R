@@ -169,27 +169,25 @@ getSubNet = function(graph, x, order)
 }
 
 
-go <- function(z, g,cutoff)
+getCommunity <- function(z, g,cutoff, community.min)
 {
-
-  if(sum(z)>0)
+  zcutoff = names(z[z>cutoff]) 
+  if(length(zcutoff)==0)
   {
-    w = names(z[z>cutoff])
-    if(length(w)>0)
-    {
-      subg <- induced.subgraph(graph=g,vids=w)
-      return(walktrap.community(subg))
-    }
-    else
-    {
-      return(NULL)
-    }
+    return(NULL)
+  }
+  subg <- induced.subgraph(graph=g,vids=zcutoff)
+  wc = walktrap.community(subg)
+  member = membership(wc)
+  w = names(member[member==1])
+  if(length(w)>=community.min)
+  {
+    return(w)
   }
   else
   {
     return(NULL)
   }
-  
 }
 
 #' get GO
@@ -198,7 +196,7 @@ go <- function(z, g,cutoff)
 #' 
 getGO <- function(sel.entrez,all.entrez)
 {
-  params <- new("GOHyperGParams", geneIds=sel.entrez, universeGeneIds=all.entrez, ontology="BP", pvalueCutoff=0.01,conditional=F, testDirection="over", annotation="hgu133a.db")
+  params <- new("GOHyperGParams", geneIds=sel.entrez, universeGeneIds=all.entrez, ontology="BP", pvalueCutoff=0.01,conditional=F, testDirection="over", annotation="hgu133plus2.db")
   Over.pres = tryCatch({
     Over.pres<-hyperGTest(params)
   }, error = function(e) {
@@ -211,8 +209,10 @@ getGO <- function(sel.entrez,all.entrez)
   
   summary <- getGeneric("summary")
   ov<-summary(Over.pres)
-  return(ov$Term)
+  return(ov[ov$Size<1000&&ov$Size>5,])
 }
+
+
 
 
 #' get GO
@@ -221,69 +221,83 @@ getGO <- function(sel.entrez,all.entrez)
 #' 
 getgobp <- function(graph, z.matrix, k=2, n.cores=1, cutoff=0.8, community.min=5)
 {
-  com = apply(z.matrix, 1, go, graph,cutoff)
 
+  community = apply(z.matrix, 1, getCommunity, graph,cutoff,community.min)
+  community = community[!sapply(community, is.null)]
   all.entrez<-rownames(z.matrix)
 
   resulttable = NULL
 
-  for(x in names(com))
+  for(x in names(community))
   {
-    c = com[[x]]
-    if(!is.null(c))
-    {
+    w = community[[x]]
 
-      member = membership(c)
-      z = names(member[member==1])
-      
-      sel.entrez<-x
-      xgo = getGO(sel.entrez, all.entrez)
-      
-      if(is.null(xgo))
-      {
-        next
-      }
-      else
-      {
-        xgo <- paste(xgo, collapse = '\n')
-      }
-      
-      xk = neighborhood(graph,k,nodes=x)
-      sel.entrez = as.character(unlist(xk))
-      xkgo = getGO(sel.entrez, all.entrez)
-      if(is.null(xkgo))
-      {
-        next
-      }
-      else
-      {
-        xkgo <- paste(xkgo, collapse = '\n')
-      }
-      
-      sel.entrez<-z
-      zgo = getGO(sel.entrez, all.entrez)
-      
-      if(is.null(zgo))
-      {
-        next
-      }
-      else
-      {
-        zgo <- paste(zgo, collapse = '\n')
-      }
-      
-      z<-paste(z, collapse = ' ')
-      
-      print(x)
-      print(xgo)
-      print(xkgo)
-      print(z)
-      print(zgo)
-      resulttable = rbind(resulttable, data.frame(x, xgo, xkgo, z, zgo))
+    
+    
+    sel.entrez<-x
+    xgo = getGO(sel.entrez, all.entrez)
+    print(length(xgo$Term))
+    if(is.null(xgo))
+    {
+      next
+    }
+    if(length(xgo$Term)==0)
+    {
+      print("empty")
+      next
+    }
+    else
+    {
+      xgo <- paste(xgo$Term, signif(xgo$Pvalue,digits = 5), sep=": ")
+      xgo <- paste(xgo, collapse = '\n')
     }
     
-     
+    xk = neighborhood(graph,k,nodes=x)
+    sel.entrez = as.character(unlist(xk))
+    xkgo = getGO(sel.entrez, all.entrez)
+    if(is.null(xkgo))
+    {
+      next
+    }
+    if(length(xkgo$Term)==0)
+    {
+      print("empty")
+      next
+    }
+    else
+    {
+      xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ")
+      xkgo <- paste(xkgo, collapse = '\n')
+    }
     
+    sel.entrez<-w
+    wgo = getGO(sel.entrez, all.entrez)
+    print(length(wgo$Term))
+    if(is.null(wgo))
+    {
+      next
+    }
+    if(length(wgo$Term)==0)
+    {
+      print("empty")
+      next
+    }
+    else
+    {
+      wgo <- paste(wgo$Term, signif(wgo$Pvalue,digits = 5), sep=": ")
+      wgo <- paste(wgo, collapse = '\n')
+    }
+    
+    w<-paste(w, collapse = ' ')
+    cat("x:")
+    print(x)
+#     print(xgo)
+#     print(xkgo)
+#     print(w)
+#     print(wgo)
+    write.table(data.frame(x, xgo, xkgo, w, wgo),file="resulttable.csv",append=T,col.names=F,sep = ",",row.names = FALSE)
+    resulttable = rbind(resulttable, data.frame(x, xgo, xkgo, w, wgo))
+
   }
   return(resulttable)
 

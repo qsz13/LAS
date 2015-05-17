@@ -116,11 +116,11 @@ for(c in com)
   print(names(com))
 }
 
-sel.entrez = as.character(unlist(neighborhood(g,2,c('1000'))))
-all.entrez<-rownames(result)
-params <- new("GOHyperGParams", geneIds=sel.entrez, universeGeneIds=all.entrez, ontology="BP", pvalueCutoff=0.01,conditional=F, testDirection="over", annotation="hgu133a.db")
-Over.pres<-hyperGTest(params)
-ov<-summary(Over.pres)
+  sel.entrez = as.character(unlist(neighborhood(g,2,c('10148'))))
+  all.entrez<-rownames(result)
+  params <- new("GOHyperGParams", geneIds=sel.entrez, universeGeneIds=all.entrez, ontology="BP", pvalueCutoff=0.01,conditional=F, testDirection="over", annotation="hgu133a.db")
+  Over.pres<-hyperGTest(params)
+  ov<-summary(Over.pres)
 ov$Term
 
 typeof(sel.entrez)
