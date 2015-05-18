@@ -179,6 +179,7 @@ getCommunity <- function(z, g,cutoff, community.min)
   subg <- induced.subgraph(graph=g,vids=zcutoff)
   wc = walktrap.community(subg)
   member = membership(wc)
+  
   w = names(member[member==1])
   if(length(w)>=community.min)
   {
@@ -219,33 +220,32 @@ getGO <- function(sel.entrez,all.entrez)
 #' 
 #' @export
 #' 
-getgobp <- function(graph, z.matrix, k=2, n.cores=1, cutoff=0.8, community.min=5)
+getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5)
 {
 
   community = apply(z.matrix, 1, getCommunity, graph,cutoff,community.min)
   community = community[!sapply(community, is.null)]
-  all.entrez<-rownames(z.matrix)
+  all.entrez<-colnames(z.matrix)
 
-  resulttable = NULL
+#   resulttable = NULL
 
-  for(x in names(community))
+  #for(x in names(community))
+  cl <- makeCluster(n.cores)
+  registerDoParallel(cl)
+  cat('loop begin')
+  resulttable <- foreach(i=1:length(names(community)), .combine='rbind') %dopar%
   {
+    x = names(community)[i]
     w = community[[x]]
-
-    
     
     sel.entrez<-x
     xgo = getGO(sel.entrez, all.entrez)
+    
     print(length(xgo$Term))
-    if(is.null(xgo))
+    if(is.null(xgo)||is.na(xgo$Pvalue)||length(xgo$Term)==0)
     {
-      next
-    }
-    if(length(xgo$Term)==0)
-    {
-      print("empty")
-      next
-    }
+      return(NULL)
+    }  
     else
     {
       xgo <- paste(xgo$Term, signif(xgo$Pvalue,digits = 5), sep=": ")
@@ -255,14 +255,11 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=1, cutoff=0.8, community.min=5
     xk = neighborhood(graph,k,nodes=x)
     sel.entrez = as.character(unlist(xk))
     xkgo = getGO(sel.entrez, all.entrez)
-    if(is.null(xkgo))
+    
+    
+    if(is.null(xkgo)||is.na(xkgo$Pvalue)||length(xkgo$Term)==0)
     {
-      next
-    }
-    if(length(xkgo$Term)==0)
-    {
-      print("empty")
-      next
+      return(NULL)
     }
     else
     {
@@ -270,17 +267,12 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=1, cutoff=0.8, community.min=5
       xkgo <- paste(xkgo, collapse = '\n')
     }
     
+    
     sel.entrez<-w
     wgo = getGO(sel.entrez, all.entrez)
-    print(length(wgo$Term))
-    if(is.null(wgo))
+    if(is.null(wgo)||is.na(wgo$Pvalue)||length(wgo$Term)==0)
     {
-      next
-    }
-    if(length(wgo$Term)==0)
-    {
-      print("empty")
-      next
+      return(NULL)
     }
     else
     {
@@ -289,16 +281,13 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=1, cutoff=0.8, community.min=5
     }
     
     w<-paste(w, collapse = ' ')
-    cat("x:")
-    print(x)
-#     print(xgo)
-#     print(xkgo)
-#     print(w)
-#     print(wgo)
-    write.table(data.frame(x, xgo, xkgo, w, wgo),file="resulttable.csv",append=T,col.names=F,sep = ",",row.names = FALSE)
-    resulttable = rbind(resulttable, data.frame(x, xgo, xkgo, w, wgo))
-
+    
+  #     write.table(data.frame(x, xgo, xkgo, w, wgo),file="resulttable.csv",append=T,col.names=F,sep = ",",row.names = FALSE)
+    return(data.frame(x, xgo, xkgo, w, wgo))
   }
+
+
+  stopCluster(cl)
   return(resulttable)
 
 }

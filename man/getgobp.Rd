@@ -4,7 +4,7 @@
 \alias{getgobp}
 \title{get GO}
 \usage{
-getgobp(graph, z.matrix, k = 2, n.cores = 1, cutoff = 0.8,
+getgobp(graph, z.matrix, k = 2, n.cores = 4, cutoff = 0.8,
   community.min = 5)
 }
 \description{
