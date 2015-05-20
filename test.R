@@ -84,11 +84,11 @@ index.top.N = function(xs, N=10){
 }
 
 
-testz = result['5700',]
+testz = result['1000',]
 cutoff=0.8
 w = names(testz[testz>cutoff])
 subg <- induced.subgraph(graph=g,vids=w)
-walktrap.community(subg)
+wc = walktrap.community(subg)
 network = asNetwork(subg)
 ggnet(network,size=4,segment.size=1)
 
@@ -127,3 +127,11 @@ typeof(sel.entrez)
 unlist(sel.entrez)
 sel.entrez
 all.entrez
+
+
+
+for(ci in community_index)
+{
+  print(ci)
+}
+

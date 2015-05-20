@@ -178,12 +178,12 @@ getCommunity <- function(z, g,cutoff, community.min)
   }
   subg <- induced.subgraph(graph=g,vids=zcutoff)
   wc = walktrap.community(subg)
+
   member = membership(wc)
-  
-  w = names(member[member==1])
+  w = names(member[member==which.max(sizes(wc))])
   if(length(w)>=community.min)
   {
-    return(w)
+    return(wc)
   }
   else
   {
@@ -215,6 +215,33 @@ getGO <- function(sel.entrez,all.entrez)
 
 
 
+gen.data <- function(ci, member, all.entrez)
+{
+
+    
+  w = names(member[member==ci])
+
+  sel.entrez<-w
+  wgo = getGO(sel.entrez, all.entrez)
+  if(is.null(wgo)||is.na(wgo$Pvalue)||length(wgo$Term)==0)
+  {
+    return(NULL)
+  }
+  else
+  {
+    wgo <- paste(wgo$Term, signif(wgo$Pvalue,digits = 5), sep=": ")
+    wgo <- paste(wgo, collapse = '\n')
+  }
+  
+  w<-paste(w, collapse = ' ')
+  
+  return(data.frame(w, wgo))
+}
+
+
+
+
+
 
 #' get GO
 #' 
@@ -227,16 +254,23 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
   community = community[!sapply(community, is.null)]
   all.entrez<-colnames(z.matrix)
 
-#   resulttable = NULL
 
-  #for(x in names(community))
-  cl <- makeCluster(n.cores)
+  cl <- makeCluster(n.cores, outfile="")
   registerDoParallel(cl)
-  cat('loop begin')
+  cat('loop begin\n')
+  print(community)
   resulttable <- foreach(i=1:length(names(community)), .combine='rbind') %dopar%
   {
     x = names(community)[i]
-    w = community[[x]]
+    print(x)
+    wc = community[[x]]
+    member = membership(wc)
+    
+    community_index = names(sizes(wc)[sizes(wc)>5])
+    
+
+    
+    
     
     sel.entrez<-x
     xgo = getGO(sel.entrez, all.entrez)
@@ -266,24 +300,10 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
       xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ")
       xkgo <- paste(xkgo, collapse = '\n')
     }
+    print(community_index)
+    w.result = do.call("rbind",lapply(community_index, gen.data, member, all.entrez))
     
-    
-    sel.entrez<-w
-    wgo = getGO(sel.entrez, all.entrez)
-    if(is.null(wgo)||is.na(wgo$Pvalue)||length(wgo$Term)==0)
-    {
-      return(NULL)
-    }
-    else
-    {
-      wgo <- paste(wgo$Term, signif(wgo$Pvalue,digits = 5), sep=": ")
-      wgo <- paste(wgo, collapse = '\n')
-    }
-    
-    w<-paste(w, collapse = ' ')
-    
-  #     write.table(data.frame(x, xgo, xkgo, w, wgo),file="resulttable.csv",append=T,col.names=F,sep = ",",row.names = FALSE)
-    return(data.frame(x, xgo, xkgo, w, wgo))
+    return(cbind(x, xgo, xkgo,w.result))
   }
 
 
