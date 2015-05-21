@@ -258,11 +258,11 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
   cl <- makeCluster(n.cores, outfile="")
   registerDoParallel(cl)
   cat('loop begin\n')
-  print(community)
+
   resulttable <- foreach(i=1:length(names(community)), .combine='rbind') %dopar%
   {
     x = names(community)[i]
-    print(x)
+
     wc = community[[x]]
     member = membership(wc)
     
@@ -274,8 +274,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     
     sel.entrez<-x
     xgo = getGO(sel.entrez, all.entrez)
-    
-    print(length(xgo$Term))
+
     if(is.null(xgo)||is.na(xgo$Pvalue)||length(xgo$Term)==0)
     {
       return(NULL)
@@ -300,7 +299,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
       xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ")
       xkgo <- paste(xkgo, collapse = '\n')
     }
-    print(community_index)
+    
     w.result = do.call("rbind",lapply(community_index, gen.data, member, all.entrez))
     if(is.null(w.result))
     {
@@ -308,6 +307,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     }
     else
     {
+      print(x)
       return(cbind(x, xgo, xkgo,w.result))
     }
     
