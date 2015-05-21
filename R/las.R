@@ -302,8 +302,15 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     }
     print(community_index)
     w.result = do.call("rbind",lapply(community_index, gen.data, member, all.entrez))
+    if(is.null(w.result))
+    {
+      return(NULL)
+    }
+    else
+    {
+      return(cbind(x, xgo, xkgo,w.result))
+    }
     
-    return(cbind(x, xgo, xkgo,w.result))
   }
 
 
