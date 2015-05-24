@@ -257,6 +257,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
   cl <- makeCluster(n.cores, outfile="")
   registerDoParallel(cl)
   cat('loop begin\n')
+
   resulttable <- foreach(i=1:length(names(community)), .combine='rbind') %dopar%
   {
     x = names(community)[i]
@@ -295,9 +296,17 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     {
       xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
+
     w.result = do.call("rbind",lapply(community_index, gen.data, member, all.entrez))
-    print(x)
-    return(cbind(x, xgo, xkgo,w.result))
+    if(is.null(w.result))
+    {
+      return(NULL)
+    }
+    else
+    {
+      print(x)
+      return(cbind(x, xgo, xkgo,w.result))
+    }
   }
   stopCluster(cl)
   return(resulttable)
