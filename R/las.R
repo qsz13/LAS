@@ -215,7 +215,7 @@ getGO <- function(sel.entrez,all.entrez)
 
 
 
-gen.data <- function(ci, member, all.entrez)
+gen.data <- function(ci, member, all.entrez, term.limit)
 {
 
     
@@ -229,6 +229,10 @@ gen.data <- function(ci, member, all.entrez)
   }
   else
   {
+    if(!is.na(term.limit))
+    {
+      wgo = wgo[1:term.limit]
+    }
     wgo <- paste(wgo$Term, signif(wgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
   }
   
@@ -242,11 +246,11 @@ gen.data <- function(ci, member, all.entrez)
 
 
 
-#' get GO
+#' get GOBP
 #' 
 #' @export
 #' 
-getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5)
+getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5, term.limit=NA)
 {
 
   community = apply(z.matrix, 1, getCommunity, graph,cutoff,community.min)
@@ -267,9 +271,6 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     
     community_index = names(sizes(wc)[sizes(wc)>5])
     
-
-    
-    
     
     sel.entrez<-x
     xgo = getGO(sel.entrez, all.entrez)
@@ -280,6 +281,10 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     }  
     else
     {
+      if(!is.na(term.limit))
+      {
+        xgo = xgo[1:term.limit]
+      }
       xgo <- paste(xgo$Term, signif(xgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
     
@@ -294,10 +299,14 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     }
     else
     {
+      if(!is.na(term.limit))
+      {
+        xkgo = xkgo[1:term.limit]
+      }
       xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
 
-    w.result = do.call("rbind",lapply(community_index, gen.data, member, all.entrez))
+    w.result = do.call("rbind",lapply(community_index, gen.data, member, all.entrez, term.limit))
     if(is.null(w.result))
     {
       return(NULL)
@@ -310,6 +319,46 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
   }
   stopCluster(cl)
   return(resulttable)
+
+}
+
+
+
+
+cutoffz <- function(z, cutoff)
+{
+  zcutoff = names(z[z>cutoff]) 
+  if(length(zcutoff)==0)
+  {
+    return(NULL)
+  }
+  return(zcutoff)
+}
+
+
+
+
+#' xw.distance
+#' 
+#' @export
+#' 
+xw.distance <- function(graph, z.matrix, cutoff=0.8, n.cores=4)
+{
+  wlist = apply(z.matrix, 1, cutoffz, cutoff)
+  wlist = wlist[!sapply(wlist, is.null)]
+
+  cl <- makeCluster(n.cores, outfile="")
+  registerDoParallel(cl)
+  resulttable <- foreach(i=1:length(names(wlist)), .combine='rbind') %dopar%
+  {
+    x = names(wlist)[i]
+    wl = wlist[[x]]
+    for(w in wl)
+    {
+      distance = shortest.paths(graph, v=x, to=w)
+      return(cbind(x,w,distance))
+    }
+  }
 
 }
 

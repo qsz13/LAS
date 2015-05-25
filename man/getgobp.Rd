@@ -2,12 +2,12 @@
 % Please edit documentation in R/las.R
 \name{getgobp}
 \alias{getgobp}
-\title{get GO}
+\title{get GOBP}
 \usage{
 getgobp(graph, z.matrix, k = 2, n.cores = 4, cutoff = 0.8,
-  community.min = 5)
+  community.min = 5, term.limit = NA)
 }
 \description{
-get GO
+get GOBP
 }
 
