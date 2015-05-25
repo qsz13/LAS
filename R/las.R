@@ -231,7 +231,7 @@ gen.data <- function(ci, member, all.entrez, term.limit)
   {
     if(!is.na(term.limit))
     {
-      wgo = wgo[1:term.limit]
+      wgo = wgo[1:term.limit,]
     }
     wgo <- paste(wgo$Term, signif(wgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
   }
@@ -283,7 +283,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     {
       if(!is.na(term.limit))
       {
-        xgo = xgo[1:term.limit]
+        xgo = xgo[1:term.limit,]
       }
       xgo <- paste(xgo$Term, signif(xgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
@@ -301,7 +301,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     {
       if(!is.na(term.limit))
       {
-        xkgo = xkgo[1:term.limit]
+        xkgo = xkgo[1:term.limit,]
       }
       xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
