@@ -384,10 +384,7 @@ w.distance <- function(ci, member, xk)
   {
     w = w[1:5]
   }
-  if(length(xk)>5)
-  {
-    xk = xk[1:5]
-  }
+  
 #   print(w)
 #   print(xk)
 
