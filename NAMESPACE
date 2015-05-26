@@ -3,5 +3,6 @@
 export(getGO)
 export(getgobp)
 export(lascouting)
+export(semantic.distance)
 export(xw.distance)
 export(z.kernel.density)

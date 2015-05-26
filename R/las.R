@@ -353,16 +353,83 @@ xw.distance <- function(graph, z.matrix, cutoff=0.8, n.cores=4)
   {
     x = names(wlist)[i]
     wl = wlist[[x]]
+    distance.table = NULL
     for(w in wl)
     {
       distance = shortest.paths(graph, v=x, to=w)
-      return(cbind(x,w,distance))
+      
+      distance.table = rbind(distance.table,c(x,w,distance))
     }
+    return(distance.table)
   }
 
 }
 
+w.distance <- function(ci, member, xk)
+{
+  
+  
+  w = names(member[member==ci])
+#   sim = tryCatch({
+#     
+#   }, error = function(e) {
+#     return(NULL)
+#   })
+#   if(is.null(sim))
+#   {
+#     return(NULL)
+#   }
 
+  if(length(w)>5)
+  {
+    w = w[1:5]
+  }
+  if(length(xk)>5)
+  {
+    xk = xk[1:5]
+  }
+#   print(w)
+#   print(xk)
+
+  sim = clusterSim(c(w),c(xk),combine = "avg")
+  w<-paste(w, collapse = ' ')
+  xk<-paste(xk, collapse = ' ')
+  return(data.frame(xk, w,sim))
+}
+
+
+#' semantic.distance
+#' 
+#' @export
+#' 
+semantic.distance <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5, term.limit=NA)
+{
+  
+  community = apply(z.matrix, 1, getCommunity, graph,cutoff,community.min)
+  community = community[!sapply(community, is.null)]
+  all.entrez<-colnames(z.matrix)
+  cl <- makeCluster(n.cores, outfile="")
+  registerDoParallel(cl)
+  cat('loop begin\n')
+  resulttable <- foreach(i=1:length(names(community)), .combine='rbind') %dopar%
+  {
+    
+    x = names(community)[i]
+#     for(x in names(community)){
+      
+    xk = as.character(unlist(neighborhood(graph,k,nodes=x)))
+    wc = community[[x]]
+    member = membership(wc)
+    community_index = names(sizes(wc)[sizes(wc)>5])
+     w.result = do.call("rbind",lapply(community_index, w.distance, member, xk))
+    
+    
+    #print(w.result)
+    return(cbind(x,w.result))
+  }
+  stopCluster(cl)
+  return(resulttable)
+}
 
 
 
