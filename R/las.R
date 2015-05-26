@@ -384,7 +384,10 @@ w.distance <- function(ci, member, xk)
   {
     w = w[1:5]
   }
-  
+  if(length(xk)>5)
+  {
+    xk = xk[1:5]
+  }
 #   print(w)
 #   print(xk)
 
@@ -404,7 +407,6 @@ semantic.distance <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, commu
   
   community = apply(z.matrix, 1, getCommunity, graph,cutoff,community.min)
   community = community[!sapply(community, is.null)]
-  all.entrez<-colnames(z.matrix)
   cl <- makeCluster(n.cores, outfile="")
   registerDoParallel(cl)
   cat('loop begin\n')
