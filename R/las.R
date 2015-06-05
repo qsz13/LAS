@@ -165,7 +165,6 @@ lascore = function(x,y,z)
 getSubNet = function(graph, x, order)
 {
   return(neighborhood(graph, order,x))
-  
 }
 
 
@@ -215,7 +214,8 @@ getGO <- function(sel.entrez,all.entrez)
 
 
 
-gen.data <- function(ci, member, all.entrez, term.limit)
+
+gen.data <- function(ci, member, xk,graph, all.entrez, term.limit)
 {
 
     
@@ -234,11 +234,17 @@ gen.data <- function(ci, member, all.entrez, term.limit)
       wgo = wgo[1:term.limit,]
     }
     wgo <- paste(wgo$Term, signif(wgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
+    
   }
   
+
+#   xk = as.character(unlist(xk))
+  
+  semantic.similarity = clusterSim(c(w),c(xk),combine = "avg")
+  graph.distance = mean(shortest.paths(graph,v=w,to=xk))
   w<-paste(w, collapse = ' ')
   
-  return(data.frame(w, wgo))
+  return(data.frame(w, wgo , semantic.similarity, graph.distance))
 }
 
 
@@ -257,15 +263,15 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
   community = community[!sapply(community, is.null)]
   all.entrez<-colnames(z.matrix)
 
-
+  resulttable = NULL
   cl <- makeCluster(n.cores, outfile="")
   registerDoParallel(cl)
   cat('loop begin\n')
 
   resulttable <- foreach(i=1:length(names(community)), .combine='rbind') %dopar%
   {
-    x = names(community)[i]
-
+   x = names(community)[i]
+#   for(x in names(community)){
     wc = community[[x]]
     member = membership(wc)
     
@@ -288,8 +294,10 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
       xgo <- paste(xgo$Term, signif(xgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
     
-    xk = neighborhood(graph,k,nodes=x)
-    sel.entrez = as.character(unlist(xk))
+#     xk = neighborhood(graph,k,nodes=x)
+    xk = V(graph)[unlist(neighborhood(graph,k,nodes=x))]$name
+#print(xk)
+    sel.entrez = xk
     xkgo = getGO(sel.entrez, all.entrez)
     
     
@@ -306,7 +314,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
       xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
 
-    w.result = do.call("rbind",lapply(community_index, gen.data, member, all.entrez, term.limit))
+    w.result = do.call("rbind",lapply(community_index, gen.data, member, xk, graph, all.entrez, term.limit))
     if(is.null(w.result))
     {
       return(NULL)
@@ -314,7 +322,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
     else
     {
       print(x)
-      return(cbind(x, xgo, xkgo,w.result))
+      return(rbind(resulttable,cbind(x, xgo, xkgo,w.result)))
     }
   }
   stopCluster(cl)
@@ -370,31 +378,23 @@ w.distance <- function(ci, member, xk)
   
   
   w = names(member[member==ci])
-#   sim = tryCatch({
-#     
-#   }, error = function(e) {
-#     return(NULL)
-#   })
-#   if(is.null(sim))
-#   {
-#     return(NULL)
-#   }
 
-  if(length(w)>5)
-  {
-    w = w[1:5]
-  }
-  if(length(xk)>5)
-  {
-    xk = xk[1:5]
-  }
+#   if(length(w)>5)
+#   {
+#     w = w[1:5]
+#   }
+#   if(length(xk)>5)
+#   {
+#     xk = xk[1:5]
+#   }
 #   print(w)
 #   print(xk)
 
   sim = clusterSim(c(w),c(xk),combine = "avg")
-  w<-paste(w, collapse = ' ')
+  w<-paste(as.character(w), collapse = ' ')
   xk<-paste(xk, collapse = ' ')
-  return(data.frame(xk, w,sim))
+# print(data.frame(xk, w,sim))
+  return(data.frame(xk,w,sim))
 }
 
 
@@ -415,16 +415,27 @@ semantic.distance <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, commu
     
     x = names(community)[i]
 #     for(x in names(community)){
-      
-    xk = as.character(unlist(neighborhood(graph,k,nodes=x)))
+    xk = neighborhood(graph,k,nodes=x)
+    xk = V(graph)[unlist(xk)]
+    
     wc = community[[x]]
     member = membership(wc)
     community_index = names(sizes(wc)[sizes(wc)>5])
+
+
+
      w.result = do.call("rbind",lapply(community_index, w.distance, member, xk))
+    if(!is.null(w.result))
+    {
+      data = cbind(x,w.result)
+    }
+    else
+    {
+      data = NULL
+    }
     
-    
-    #print(w.result)
-    return(cbind(x,w.result))
+   
+    return(data)
   }
   stopCluster(cl)
   return(resulttable)
