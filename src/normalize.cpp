@@ -1,3 +1,4 @@
+//Includes/namespaces
 // [[Rcpp::depends(BH)]]
 #include <Rcpp.h>
 #include <boost/math/distributions/normal.hpp>
@@ -20,7 +21,7 @@ NumericVector stl_sort(NumericVector x)
 }
 
 // [[Rcpp::export]]
-void normalizeInput(NumericVector x) 
+void normalizeInput(NumericVector& x) 
 {
   IntegerVector rank = match(x, stl_sort(x));
   int m = x.size()+1;
@@ -31,16 +32,18 @@ void normalizeInput(NumericVector x)
   }
 }
 
-
+//' @export
 // [[Rcpp::export]]
-void normalizeInputMatrix(NumericMatrix x)
+NumericMatrix normalizeInputMatrix(NumericMatrix& x)
 {
   int nrow = x.nrow();
   for (int i = 0; i < nrow; i++) {
-    normalizeInput(x.row(i));
+    NumericVector v =  x.row(i);
+    normalizeInput(v);
+    x.row(i) = v;
   }
+  return x;
 }
-
 
 
 

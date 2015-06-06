@@ -17,22 +17,23 @@ BEGIN_RCPP
 END_RCPP
 }
 // normalizeInput
-void normalizeInput(NumericVector x);
+void normalizeInput(NumericVector& x);
 RcppExport SEXP LAS_normalizeInput(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type x(xSEXP);
     normalizeInput(x);
     return R_NilValue;
 END_RCPP
 }
 // normalizeInputMatrix
-void normalizeInputMatrix(NumericMatrix x);
+NumericMatrix normalizeInputMatrix(NumericMatrix& x);
 RcppExport SEXP LAS_normalizeInputMatrix(SEXP xSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    normalizeInputMatrix(x);
-    return R_NilValue;
+    Rcpp::traits::input_parameter< NumericMatrix& >::type x(xSEXP);
+    __result = Rcpp::wrap(normalizeInputMatrix(x));
+    return __result;
 END_RCPP
 }

@@ -1,5 +1,5 @@
 #' Find the liquid association scouting gene
-#' 
+#' @useDynLib LAS
 #' @param network.graph An igraph object representing the gene network.
 #' @param express.matrix A matrix represeting the express matrix for the genes in gene network.Row names are the gene id in gene network.
 #' @param k Integer giving the order of the network.
@@ -17,8 +17,8 @@ lascouting <- function(network.graph, express.matrix, k=2, n.cores=4){
     express.matrix <- cleanMatrix(express.matrix, common.node)
   }
   size <- length(common.node)
-  normalizeInputMatrix(express.matrix)
-  
+  express.matrix = normalizeInputMatrix(express.matrix)
+  print(express.matrix)
   if(k!=1)
   {
     graph.connected <- connect.neighborhood(network.graph,k)
@@ -29,24 +29,20 @@ lascouting <- function(network.graph, express.matrix, k=2, n.cores=4){
     connected.list <- as.matrix(get.edgelist(network.graph))
   }
   row.size <- nrow(connected.list)
-  cl <- makeCluster(n.cores)
+  express.matrix.t <- t(express.matrix)/ncol(express.matrix)
+  
+  cl <- makeCluster(n.cores, outfile="")
   registerDoParallel(cl)
   
-
-  express.matrix.t <- t(express.matrix)/75
   ptm <- proc.time()
 
   cat("loop begin\n")
 
   result <- foreach(i=1:row.size) %dopar%
   {
-
     xy <- express.matrix[connected.list[i,1],]*express.matrix[connected.list[i,2],]
-    
     la.vector <- c(xy%*%express.matrix.t)
-
     lfdr <- fdrtool(la.vector, verbose=FALSE, plot = FALSE)$lfdr
-
     return(rownames(express.matrix)[which(lfdr<0.2)])
 
   }
@@ -83,6 +79,13 @@ lascouting <- function(network.graph, express.matrix, k=2, n.cores=4){
 z.kernel.density <- function(relate.matrix, network.graph, smoothing.normalize=c("one","squareM","none") ) {
   smoothing.normalize <- match.arg(smoothing.normalize)
   
+  network.node <- V(network.graph)$name
+  matrix.node <- row.names(relate.matrix)
+  if(!identical(intersect(network.node,matrix.node),union(network.node,matrix.node))){
+    common.node <- getCommonNode(network.graph, relate.matrix)
+    network.graph <- cleanGraph(network.graph, common.node)
+  }
+  
   weight0 = dnorm(0)
   weight1 = dnorm(1)
   weight2 = dnorm(2)
@@ -104,8 +107,9 @@ z.kernel.density <- function(relate.matrix, network.graph, smoothing.normalize=c
   adjacency1 = adjacency1[,order(colnames(adjacency1)) ] 
   adjacency2 = adjacency2[order(rownames(adjacency2)), ] 
   adjacency2 = adjacency2[,order(colnames(adjacency2)) ] 
-  
-  weight.matrix = diag(size)*weight0 +adjacency1*weight1+adjacency2*weight2
+
+  temp = diag(size)*weight0 
+  weight.matrix = temp+adjacency1*weight1+adjacency2*weight2
 
   if(smoothing.normalize=="one")
   {
@@ -153,7 +157,7 @@ cleanGraph <- function(network.graph, remain){
 
 cleanMatrix <- function(express.matrix, remain)
 {
-  express.matrix <- express.matrix[rownames(b)%in%remain,]
+  express.matrix <- express.matrix[rownames(express.matrix)%in%remain,]
   return(express.matrix)
 }
 
@@ -215,7 +219,7 @@ getGO <- function(sel.entrez,all.entrez)
 
 
 
-gen.data <- function(ci, member, xk,graph, all.entrez, term.limit)
+gen.data <- function(ci, member, xk,x,graph, all.entrez, term.limit)
 {
 
     
@@ -237,11 +241,9 @@ gen.data <- function(ci, member, xk,graph, all.entrez, term.limit)
     
   }
   
-
-#   xk = as.character(unlist(xk))
   
-  semantic.similarity = clusterSim(c(w),c(xk),combine = "avg")
-  graph.distance = mean(shortest.paths(graph,v=w,to=xk))
+  xk.w.semantic.similarity = clusterSim(c(w),c(xk),combine = "avg")
+  x.w.avg.distance = mean(shortest.paths(graph,v=w,to=x))
   w<-paste(w, collapse = ' ')
   
   return(data.frame(w, wgo , semantic.similarity, graph.distance))
@@ -314,7 +316,7 @@ getgobp <- function(graph, z.matrix, k=2, n.cores=4, cutoff=0.8, community.min=5
       xkgo <- paste(xkgo$Term, signif(xkgo$Pvalue,digits = 5), sep=": ", collapse = '\n')
     }
 
-    w.result = do.call("rbind",lapply(community_index, gen.data, member, xk, graph, all.entrez, term.limit))
+    w.result = do.call("rbind",lapply(community_index, gen.data, member, xk,x, graph, all.entrez, term.limit))
     if(is.null(w.result))
     {
       return(NULL)
