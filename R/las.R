@@ -246,7 +246,7 @@ gen.data <- function(ci, member, xk,x,graph, all.entrez, term.limit)
   x.w.avg.distance = mean(shortest.paths(graph,v=w,to=x))
   w<-paste(w, collapse = ' ')
   
-  return(data.frame(w, wgo , semantic.similarity, graph.distance))
+  return(data.frame(w, wgo , xk.w.semantic.similarity, x.w.avg.distance))
 }
 
 
