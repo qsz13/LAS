@@ -2,7 +2,8 @@
 
 export(getGO)
 export(getgobp)
+export(kernel.density)
 export(lascouting)
-export(semantic.distance)
+export(normalizeInputMatrix)
 export(xw.distance)
-export(z.kernel.density)
+useDynLib(LAS)

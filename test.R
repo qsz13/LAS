@@ -1,11 +1,11 @@
 library(igraph)
 library(microbenchmark)
 library(fdrtool)
-network_list = as.matrix(read.table("/Users/danielqiu/Workspace/Bio/HumanBinaryHQ_HINT.txt"))
+network_list = as.matrix(read.table("~/LAS/HumanBinaryHQ_HINT.txt"))
 
 load("/Users/danielqiu/Workspace/Bio/GSE18864_entrez_norm.bin")
-
-g = graph.data.frame(network_list, directed=FALSE)
+load("~/LAS/GSE10255_entrez.bin")
+g = graph.data.frame(as.matrix(read.table("~/LAS/HumanBinaryHQ_HINT.txt")), directed=FALSE)
 
 las(g,b)
 

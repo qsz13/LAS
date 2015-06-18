@@ -9,7 +9,8 @@ normalizeInput <- function(x) {
     invisible(.Call('LAS_normalizeInput', PACKAGE = 'LAS', x))
 }
 
+#' @export
 normalizeInputMatrix <- function(x) {
-    invisible(.Call('LAS_normalizeInputMatrix', PACKAGE = 'LAS', x))
+    .Call('LAS_normalizeInputMatrix', PACKAGE = 'LAS', x)
 }
 
