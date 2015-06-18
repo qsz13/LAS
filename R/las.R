@@ -80,7 +80,6 @@ getGO <- function(sel.entrez,all.entrez)
 
 
 
-
 cutoffz <- function(z, cutoff)
 {
   zcutoff = names(z[z>cutoff]) 
