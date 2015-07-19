@@ -138,3 +138,58 @@ cluster1 <- c("835", "5261","241", "994")
 cluster2 <- c("307", "308", "317", "321", "506", "540", "378", "388", "396")
 clusterSim(cluster1, cluster2, ont="MF", organism="human", measure="Wang")
 temp <- geneSim("5921", "9046", ont = "BP", organism = "human", measure = "Wang", combine = "max")
+
+
+
+
+visualize <- function(g,result, x, k, cutoff=0.8)
+{
+  X = as.character(x)
+  Y = V(g)$name[unlist(igraph::neighborhood(g, 2, nodes=X))]
+
+  z = result[X,]
+  W = names(z[z>cutoff])
+  W1 = V(g)$name[unlist(igraph::neighborhood(g, 1, nodes=W))]
+
+  #print(c(X,Y,W,W1))
+  subg = induced.subgraph(g, unique(c(X,Y,W,W1)))
+  
+  type <- vector(mode="character", length=length(V(subg)))
+  type <- setNames(type, V(subg)$name)
+  
+ 
+  
+  for(v in W)
+  {
+    type[v] = "W"
+  }
+  for(v in W1)
+  {
+    type[v] = "W"
+  }
+  for(v in Y)
+  {
+    type[v] = "Y"
+  }
+  type[X] = "X"
+  print(type)
+  network = asNetwork(subg)
+  ggnet(network,node.group=type,size=4,segment.size=1)
+}
+
+ifelse(V(g)%in%y, "Y","X")
+type <- vector(mode="character", length=length(V(g)))
+type <- setNames(type, V(g)$name)
+for(v in V(g)$name)
+{
+  #print(v)
+  if(as.integer(v)%in%y[[1]])
+  {
+    type[v] = 'y'
+  }
+}
+
+print(type)
+
+network = asNetwork(g)
+ggnet(network,node.group=type,size=4,segment.size=1)
