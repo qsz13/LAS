@@ -4,7 +4,7 @@
 \alias{visualize}
 \title{visualize}
 \usage{
-visualize(g, x, k, w)
+visualize(g, result, x, k, cutoff = 0.8)
 }
 \description{
 visualize
