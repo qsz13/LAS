@@ -47,7 +47,7 @@ kernel.density <- function(relate.matrix, network.graph, smoothing.normalize=c("
     nmatrix = diag(1/rsum)
     colnames(nmatrix) <- rownames(weight.matrix)
     weight.matrix = nmatrix %*% weight.matrix
-    
+    print("normlize one")
   }
   else if(smoothing.normalize=="squareM")
   {

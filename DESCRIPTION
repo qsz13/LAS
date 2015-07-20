@@ -9,4 +9,4 @@ Description: Find liquid association scouting genes on a gene network and evalua
 License: GPL (>= 2)
 Imports:  BH
 LinkingTo: Rcpp,BH
-Depends: foreach, doParallel, igraph, GOstats, GOSemSim, Rcpp, fdrtool
+Depends: foreach, doParallel, igraph, GOstats, GOSemSim, Rcpp, fdrtool, GGally, intergraph,sna
