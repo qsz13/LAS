@@ -8,7 +8,7 @@ getCommonNode <- function(network.graph, matrix){
 cleanGraph <- function(network.graph, remain){
   network.node <- V(network.graph)$name
   delete <- setdiff(network.node, remain)
-  network.graph <- delete.vertices(network.graph, delete)
+  network.graph <- igraph::delete.vertices(network.graph, delete)
   return(network.graph)
 }
 
