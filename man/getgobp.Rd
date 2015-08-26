@@ -2,12 +2,35 @@
 % Please edit documentation in R/getgobp.R
 \name{getgobp}
 \alias{getgobp}
-\title{get GOBP}
+\title{Create a table to record Gene Ontology Biological Process mapping results.  Every gene W's community takes a row.}
 \usage{
-getgobp(graph, z.matrix, k = 2, n.cores = 4, cutoff = 0.8,
-  community.min = 5, term.limit = NA)
+getgobp(graph, z.matrix, k = 2, n.cores = 4, cutoff = 1,
+  community = TRUE, community.min = 5, term.limit = NA,
+  output.distance = TRUE)
+}
+\arguments{
+\item{graph}{The graph of gene network.}
+
+\item{z.matrix}{A matrix representing gene Z (selected scouting genes). Row names are the gene id in gene network.}
+
+\item{k}{An Integer giving the order of the network.}
+
+\item{n.cores}{The number of cores used for parallel computing.}
+
+\item{cutoff}{The threshold to find LA scouting genes.}
+
+\item{community.min}{Integer. The minimum number of genes numbers in a community.}
+
+\item{term.limit}{The maximum number of GO terms to list in a row of the table.}
+}
+\value{
+A table containing the IDs of scouting center genes W, over-represented GO terms by
+ W, semantic similarity on the Gene Ontology system between the X ego network and all
+ scouting center genes, average graph distance between gene X and W. W are grouped by
+ network community. Each W community occupies a row.
 }
 \description{
-get GOBP
+\code{getgobp.community()} generates a result file of ego gene X,  significant GO terms of X, significant GO terms
+of genes within k steps of X, gene W, significant GO terms  of W,
 }
 

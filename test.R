@@ -404,7 +404,7 @@ x = 6636
 for( x in xcandidate)
 {
    print(x)
-  visualize(g,result10255,x,2,cutoff=1, path="test")
+   visualize.community(g,result10255,x,2,cutoff=1, path="test")
 }
 
 
